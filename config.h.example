@@ -21,6 +21,7 @@
 
 // Sensor config
 #define sensor_number "1"
+#define esp_client_id "sensor1"
 
 // Publish
 // 5min
