@@ -6,8 +6,14 @@
 
 #ifdef ESP32
 #include <WiFi.h>
+// Wire for ESP32
+#define PIN_SDA 21
+#define PIN_SCL 22
 #else
 #include <ESP8266WiFi.h>
+// Wire for NodeMCU
+#define PIN_SDA D3
+#define PIN_SCL D4
 #endif
 
 WiFiClient espClient;
@@ -183,7 +189,7 @@ void loop() {
       Serial.println("Forcing update...");
     }
 #ifdef BME280
-    update_temp(forceMsg);
+    update_temp(forceMsg, 0.05);
     update_hum(forceMsg);
     update_baro(forceMsg);
 #endif
@@ -205,15 +211,14 @@ void loop() {
 
 #ifdef BME280
 float temp = 0.0;
-void update_temp(bool forced_update) {
+void update_temp(bool forced_update, float delta_t) {
   float newTemp = bme.readTemperature();
-  if (checkBound(newTemp, temp, diff) || forced_update) {
+  if (checkBound(newTemp, temp, delta_t) || forced_update) {
     temp = newTemp;
     float temp_c = temp; // Celsius
     float temp_f = temp * 1.8F + 32.0F; // Fahrenheit
-    Serial.print("New temperature:");
-    Serial.print(String(temp_c) + " degC   ");
-    Serial.println(String(temp_f) + " degF");
+    Serial.print("New temperature: ");
+    Serial.print(String(temp_c) + " degC / "); Serial.println(String(temp_f) + " degF");
     client.publish(temperature_c_topic, String(temp_c).c_str(), true);
     client.publish(temperature_f_topic, String(temp_f).c_str(), true);
   }
@@ -226,8 +231,8 @@ void update_hum(bool forced_update) {
   float newHum = bme.readHumidity();
   if (checkBound(newHum, hum, diff) || forced_update) {
     hum = newHum;
-    Serial.print("New humidity:");
-    Serial.println(String(hum) + " %");
+    Serial.print("New humidity: ");
+    Serial.println(String(hum) + "%");
     client.publish(humidity_topic, String(hum).c_str(), true);
   }
 }
@@ -241,9 +246,8 @@ void update_baro(bool forced_update) {
     baro = newBaro;
     float baro_hpa = baro + baro_corr_hpa; // hPa corrected to sea level
     float baro_inhg = baro_hpa / 33.8639F; // inHg corrected to sea level
-    Serial.print("New barometer:");
-    Serial.print(String(baro_hpa) + " hPa   ");
-    Serial.println(String(baro_inhg) + " inHg");
+    Serial.print("New barometer: ");
+    Serial.print(String(baro_hpa) + "hPa / "); Serial.println(String(baro_inhg) + "inHg");
     client.publish(barometer_hpa_topic, String(baro_hpa).c_str(), true);
     client.publish(barometer_inhg_topic, String(baro_inhg).c_str(), true);
   }
@@ -251,17 +255,16 @@ void update_baro(bool forced_update) {
 #endif
 
 #ifdef TSL2561
-float lux = 0.0;
+int lux = 0;
 void update_lux(bool forced_update) {
 
   /* Get a new sensor event */
   sensors_event_t event;
   tsl.getEvent(&event);
-  float newLux = event.light;
+  int newLux = event.light;
   if (checkBound(newLux, lux, diff) || forced_update) {
     lux = newLux;
-    Serial.print("New lightmeter:");
-    Serial.print(String(lux) + " lux   ");
+    Serial.print("New lightmeter: "); Serial.println(String(lux) + " lux   ");
     client.publish(luminosity_topic, String(lux).c_str(), true);
   }
 }
