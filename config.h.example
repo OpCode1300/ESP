@@ -14,9 +14,6 @@
 // Publish
 #define force_pub 300000 // 5min
 
-#define PIN_SDA 21
-#define PIN_SCL 22
-
 // Define sensors
 #define BME280
 #define TSL2561
