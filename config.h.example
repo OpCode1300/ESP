@@ -1,28 +1,25 @@
-#define ESP32 1
-
-// Wire
-#define PIN_SDA 3
-#define PIN_SCL 4
-
 // WIFI Settings
 #define wifi_ssid "CHANGEME"
 #define wifi_password "CHANGEME"
 
+
 // MQTT Settings
 #define mqtt_server "CHANGEME"
 #define mqtt_port 1883
-
-// BARO/ALT
-// Lookup for your altitude and fill in here, units hPa
-// HACK
-// .11968131 * ((altitude in ft)*0.3048)
-// .11968131 * (60*0.3048) = 2.1887
-#define baro_corr_hpa 2.1887
 
 // Sensor config
 #define sensor_number "1"
 #define esp_client_id "sensor1"
 
 // Publish
-// 5min
-#define force_pub 300000
+#define force_pub 300000 // 5min
+
+// Define sensors
+#define BME280
+#define TSL2561
+#define CCS811
+
+// Define sensor data
+#ifdef BME280
+#define baro_corr_hpa 2.1887
+#endif
